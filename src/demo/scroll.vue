@@ -12,9 +12,12 @@
 
 <script>
 
-    
+    import sm_xz_scroll from "../../plugin/scroll/sm_xz_scroll";
     export default {
         name: "test",
+      components:{
+        sm_xz_scroll
+      },
         data(){
             return{
                 len:0,

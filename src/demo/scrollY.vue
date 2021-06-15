@@ -21,9 +21,12 @@
 </template>
 
 <script>
-
+import sm_xz_scroll_y from "../../plugin/scrollY/sm_xz_scroll_y";
 export default {
   name: 'App',
+  components:{
+    sm_xz_scroll_y
+  }
   data(){
     return{
       internalActive: {name:"tabCapita",title:'桌均（基于收入）',width:130},
