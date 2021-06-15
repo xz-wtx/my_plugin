@@ -1,26 +1,76 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div style="height: 100%">
+
+    <sm_xz_scroll  @draw_up="drawUp" @draw_down="drawDown">
+      <li  v-for="(data,index) in dataList" :key="index">{{data.title}}</li>
+      <!--      <div style="text-align: center">暂无数据</div>-->
+    </sm_xz_scroll>
+
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue';
 
+import sm_xz_scroll from "../plugin/scroll";
 export default {
   name: 'App',
-  components: {
-    HelloWorld,
+  components:{
+    sm_xz_scroll
   },
+  data(){
+    return{
+      len:0,
+      count:10,
+      dataList:[{title:1},{title:2},{title:3},{title:4},{title:4},{title:12},{title:15},{title:6},{title:7},]
+    }
+  },
+  methods:{
+    drawUp(callback){
+      let _this=this;
+      setTimeout(function () {
+
+        _this.dataList=[]
+        _this.count+=30;
+        for (let i =_this.count-10; i <(_this.count+30); i++) {
+          _this.dataList.push({title:i})
+        }
+        callback(true)
+      },1000);
+    },
+    drawDown(callback){
+      if(this.len>2){
+        callback(false,"我是有底线的！")
+        return
+      }
+      this.len++
+      let _this=this;
+      setTimeout(function () {
+        for (let i =_this.count; i <(_this.count+30); i++) {
+          _this.dataList.push({title:i})
+        }
+        _this.count=_this.count+30;
+        callback(true)
+      },3000);
+    }
+  }
 };
 </script>
-
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+<style scoped>
+li {
+  list-style: none;
+  float: left;
+  width: 100%;
+  height: 60px;
+  line-height: 60px;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
 }
+/*强行改变高度*/
+/deep/ .onscroll{
+  height: 30%;
+}
+/deep/ .draw{
+  height: 80%;
+}
+
 </style>
+
