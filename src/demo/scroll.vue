@@ -3,8 +3,20 @@
     <div style="height: 100%">
 
         <sm_xz_scroll  @draw_up="drawUp" @draw_down="drawDown">
-            <li  v-for="(data,index) in dataList" :key="index">{{data.title}}</li>
-            <!--      <div style="text-align: center">暂无数据</div>-->
+
+              <template v-slot:first>
+                <div>首部数据</div>
+              </template>
+
+              <template v-slot:content >
+                <li  v-for="(data,index) in dataList" :key="index">{{data.title}}</li>
+              </template>
+
+              <template v-slot:floor>
+                <div>尾部数据</div>
+              </template>
+
+
         </sm_xz_scroll>
 
     </div>
@@ -22,7 +34,7 @@
             return{
                 len:0,
                 count:10,
-                dataList:[{title:1},{title:2},{title:3},{title:4},{title:4},{title:12},{title:15},{title:6},{title:7}]
+                dataList:[]
             }
         },
         methods:{
@@ -67,10 +79,10 @@
     }
     /*强行改变高度*/
     /deep/ .onscroll{
-        height: 60%;
+        /*height: 60%;*/
     }
     /deep/ .draw{
-        height: 80%;
+        /*height: 80%;*/
     }
 </style>
 

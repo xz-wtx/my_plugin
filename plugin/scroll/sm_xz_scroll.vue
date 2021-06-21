@@ -1,39 +1,60 @@
 <!--上下拉刷新-->
 <template>
-  <div class="scroll_div">
-    <aside class="main" v-if="!pc">
-      <div class="draw" id="draw">
-        <ul id="ul">  <!--ul不能指定高度-->
+  <div style="height: 100%">
+    <div id="first">
+      <slot name="first"></slot>
+    </div>
 
-          <li class="draw_up">
-            <div class="box">加载中
-              <div class="loader-03">
+    <div class="scroll_div" id="scroll_div">
+      <aside class="main" v-if="!pc">
+        <div class="draw" id="draw" :style="{background:background}">
+          <ul id="ul">  <!--ul不能指定高度-->
+            <li class="draw_up">
+              <div class="box">加载中
+                <div class="loader-03">
+                </div>
               </div>
-          </div>
-          </li>
-          <slot></slot>
-          <li class="draw_down">{{hint==='加载中'?'':hint}}
+            </li>
+            <slot name="content"></slot>
+
+            <li class="draw_down">{{hint==='加载中'?'':hint}}
               <div v-if="hint==='加载中'" class="box">加载中
                 <div class="loader-03">
                 </div>
               </div>
-          </li>
+            </li>
 
-        </ul>
-      </div>
-    </aside>
-
-    <div id="onscroll" class="onscroll" v-if="pc">
-      <slot></slot>
-      <li class="draw_down">{{hint==='加载中'?'':hint}}
-        <div v-if="hint==='加载中'" class="box">加载中
-          <div class="loader-03">
-          </div>
+          </ul>
         </div>
-      </li>
+      </aside>
+
+
+      <div id="onscroll" class="onscroll" v-if="pc">
+        <li class="draw_up">
+          <div class="box">加载中
+            <div class="loader-03">
+            </div>
+          </div>
+        </li>
+
+        <slot name="content"></slot>
+
+        <li class="draw_down">{{hint==='加载中'?'':hint}}
+          <div v-if="hint==='加载中'" class="box">加载中
+            <div class="loader-03">
+            </div>
+          </div>
+        </li>
+
+      </div>
+    </div>
+
+    <div id="floor" >
+      <slot name="floor"></slot>
     </div>
 
   </div>
+
 </template>
 
 <script>
@@ -51,7 +72,17 @@ export default {
     p_down:{//上拉多少触发加载
       type:Number,
       default:20,
-    }
+    },
+    //是否首次加载
+    first_load:{
+      type:Boolean,
+      default:true,
+    },
+    //背景颜色
+    background:{
+      type:String,
+      default:"#ececec",
+    },
   },
   data() {
     return {
@@ -64,9 +95,13 @@ export default {
       endTime: 0,//结束时间
       //pc
       pc: false,
-      hint:'',
-      //
-      bool: true,//请求方法是否执行完成
+
+      hint:'',//提示
+      bool: true,//请求方法是否执行完成，
+      title1:"上拉加载更多",
+      draw_up:{},
+      draw_down:{},
+
     }
   },
 
@@ -84,17 +119,46 @@ export default {
       this.ul.addEventListener('touchend', this.touchend);
     }
 
+    //动态计算高度
+    this.$nextTick(() => {
+      this.draw_up=document.getElementsByClassName("draw_up")[0];
+      this.draw_down=document.getElementsByClassName("draw_down")[0];
+
+      let first=document.getElementById("first").offsetHeight;
+      let floor=document.getElementById("floor").offsetHeight;
+      document.querySelector('#scroll_div').style.height="calc(100% - "+(first+floor)+"px)";
+       if(!this.pc) {
+         document.querySelector('#draw').style.height = "calc(100% - " + (first + floor) + "px)";
+       }
+
+      this.firstLoad();
+    })
   },
 
   methods: {
 
+    /**
+     * 是否首次加载数据
+     */
+    firstLoad(){
+      if(this.first_load){
+        let _this=this;
+        document.getElementsByClassName("draw_up")[0].style.display = "block";
+        _this.hint="加载中"
+          _this.$emit("draw_up", (bool, vv) => {
+            _this.hint =bool? _this.title1 :vv;
+            _this.draw_down.style.display = "block";
+            _this.draw_up.style.display = "none";
+          });
+        }
+    },
 
     //pc端
     //滚动条
     onscroll() {
       let _this = this;
       let obj = document.getElementById("onscroll");
-      this.hint = '加载中';
+      //this.hint = '加载中';
       obj.onscroll = function (e) {
         //变量scrollTop是滚动条滚动时，距离顶部的距离
         let scrollTop = obj.scrollTop;
@@ -105,13 +169,13 @@ export default {
         //滚动条到底部的条件
         if (scrollTop + windowHeight >= scrollHeight - _this.p_down) {
           //到了这个就可以进行业务逻辑加载后台数据了
-          console.log("到了底部");
+          _this.hint = '加载中';
           if (_this.bool) {
-            document.getElementsByClassName("draw_down")[0].style.display = "block";
+            _this.draw_down.style.display = "block";
             _this.bool = false;
             _this.$emit("draw_down", (val, vv) => {
               _this.bool = true;
-              _this.hint =val? '加载中' :vv;
+              _this.hint =val? _this.title1 :vv;
             });
           } else {
             e.preventDefault()
@@ -173,13 +237,13 @@ export default {
       //移动距离>0=向上回弹到0
       if (this.centerY > 0) {
         if (this.centerY > this.h_up / 2) {
-          document.getElementsByClassName("draw_up")[0].style.display = "block";
+          _this.draw_up.style.display = "block";
           if (this.bool) {//一次只发送一个请求
             this.bool = false;
             this.$emit("draw_up", (val, vv) => {
               _this.bool = true;
-              document.getElementsByClassName("draw_up")[0].style.display = "none";
-              _this.hint =val? '加载中' :vv;
+              _this.draw_up.style.display = "none";
+              _this.hint =val? _this.title1 :vv;
             });
           }
         }
@@ -204,13 +268,13 @@ export default {
           }
           //移动距离<回弹距离=重新计算回弹距离
           if (this.centerY < centerY + this.h_down) {
-            document.getElementsByClassName("draw_down")[0].style.display = "block";
+            _this.draw_down.style.display = "block";
             this.hint ='加载中';
             if (this.bool) {//一次只发送一个请求
               this.bool = false;
               this.$emit("draw_down", (val, vv) => {
                 _this.bool = true;
-                _this.hint =val? '加载中' :vv;
+                _this.hint =val? _this.title1 :vv;
               });
             }
             u_clientHeight = document.querySelector('#ul').clientHeight;
@@ -247,9 +311,6 @@ export default {
 html, body, #app{
   height: 100%;
 }
-.scroll_div{
-  height: 100%;
-}
 aside {
   height: 100%;
   width: 100%;
@@ -259,10 +320,8 @@ aside {
 /* 注意设置overflow: hidden;样式后，超出这个盒子的ul将不会显示 */
 .draw {
   width: 100%;
-  height: 500px;
   overflow: hidden;
   position: fixed;
-  background: #ececec
 }
 
 /* li 设置了浮动， 所以 ul 要清除浮动 */
@@ -294,6 +353,8 @@ li {
   color: darkgrey;
   font-size: 14px;
   text-align: center;
+  padding-top: 10px;
+  padding-bottom: 5px;
 }
 
 .draw_NoData {
@@ -309,7 +370,7 @@ li {
 /*pc*/
 .onscroll {
   width: 100%;
-  height: 500px;
+  height: 100%;
   overflow: auto;
   background: #ececec
 }
