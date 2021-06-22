@@ -1,6 +1,6 @@
 {
   "name": "sm_plugins",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": false,
   "description": "scroll",
   "main": "lib/sm_plugins.umd.min.js",

@@ -138,18 +138,26 @@ export default {
   methods: {
 
     /**
+     * 重新加载数据
+     */
+    reLoad(){
+        let _this=this;
+        _this.draw_down.style.display = "none";
+        _this.draw_up.style.display = "block";
+        _this.hint="加载中"
+        _this.$emit("draw_up", (bool, vv) => {
+          _this.hint =bool? _this.title1 :vv;
+          _this.draw_down.style.display = "block";
+          _this.draw_up.style.display = "none";
+        });
+
+    },
+    /**
      * 是否首次加载数据
      */
     firstLoad(){
       if(this.first_load){
-        let _this=this;
-        document.getElementsByClassName("draw_up")[0].style.display = "block";
-        _this.hint="加载中"
-          _this.$emit("draw_up", (bool, vv) => {
-            _this.hint =bool? _this.title1 :vv;
-            _this.draw_down.style.display = "block";
-            _this.draw_up.style.display = "none";
-          });
+        this.rebound();
         }
     },
 
