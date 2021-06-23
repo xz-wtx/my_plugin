@@ -2,7 +2,7 @@
 <template>
     <div style="height: 100%">
 
-        <sm_xz_scroll  @draw_up="drawUp" @draw_down="drawDown">
+        <sm_xz_scroll  @draw_up="drawUp" @draw_down="drawDown" >
 
               <template v-slot:first>
                 <div>首部数据</div>
@@ -38,6 +38,7 @@
             }
         },
         methods:{
+          //callback 1下次是否有数据，2提示，3是否空数据
             drawUp(callback){
                 let _this=this;
                 setTimeout(function () {
@@ -52,7 +53,7 @@
             },
             drawDown(callback){
                 if(this.len>6){
-                    callback(false,"我是有底线的！")
+                    callback(false,"我是有底线的！",this.dataList.length<=0)
                     return
                 }
                 this.len++

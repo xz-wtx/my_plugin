@@ -17,8 +17,8 @@
             </li>
             <slot name="content"></slot>
             <div v-if="isEmpty" class="empty">
-              <img :src="emptyImg" class="empty_img">
-              <div style="margin-top: 10px">{{emptyTitle}}</div>
+              <img :src="empty_img" class="empty_img">
+              <div style="margin-top: 10px">{{empty_title}}</div>
             </div>
             <li class="draw_down" v-if="!isEmpty">
               {{hint==='加载中'?'':hint}}
@@ -43,8 +43,8 @@
 
         <slot name="content"></slot>
         <div v-if="isEmpty" class="empty">
-          <img :src="emptyImg" class="empty_img">
-          <div style="margin-top: 10px">{{emptyTitle}}</div>
+          <img :src="empty_img" class="empty_img">
+          <div style="margin-top: 10px">{{empty_title}}</div>
         </div>
         <li class="draw_down" v-if="!isEmpty">{{hint==='加载中'?'':hint}}
           <div v-if="hint==='加载中'" class="box">加载中
@@ -91,18 +91,13 @@ export default {
       type:String,
       default:"#ececec",
     },
-    //开启空图片
-    openEmpty:{
-      type:Boolean,
-      default:true,
-    },
     //空图片地址
-    emptyImg:{
+    empty_img:{
       type:String,
       default: "empty.png",
     },
     //空数据提示
-    emptyTitle:{
+    empty_title:{
       type:String,
       default: "暂无数据",
     }
