@@ -4,7 +4,6 @@ node_modules
 
 #屏蔽不需要展示的
 plugin/
-public/
 vue.config.js
 babel.config.js
 *.map

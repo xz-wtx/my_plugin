@@ -16,8 +16,12 @@
               </div>
             </li>
             <slot name="content"></slot>
-
-            <li class="draw_down">{{hint==='加载中'?'':hint}}
+            <div v-if="isEmpty" class="empty">
+              <img :src="emptyImg" class="empty_img">
+              <div style="margin-top: 10px">{{emptyTitle}}</div>
+            </div>
+            <li class="draw_down" v-if="!isEmpty">
+              {{hint==='加载中'?'':hint}}
               <div v-if="hint==='加载中'" class="box">加载中
                 <div class="loader-03">
                 </div>
@@ -38,8 +42,11 @@
         </li>
 
         <slot name="content"></slot>
-
-        <li class="draw_down">{{hint==='加载中'?'':hint}}
+        <div v-if="isEmpty" class="empty">
+          <img :src="emptyImg" class="empty_img">
+          <div style="margin-top: 10px">{{emptyTitle}}</div>
+        </div>
+        <li class="draw_down" v-if="!isEmpty">{{hint==='加载中'?'':hint}}
           <div v-if="hint==='加载中'" class="box">加载中
             <div class="loader-03">
             </div>
@@ -58,6 +65,7 @@
 </template>
 
 <script>
+
 export default {
   name: "sm_xz_scroll",
   props:{
@@ -83,6 +91,21 @@ export default {
       type:String,
       default:"#ececec",
     },
+    //开启空图片
+    openEmpty:{
+      type:Boolean,
+      default:true,
+    },
+    //空图片地址
+    emptyImg:{
+      type:String,
+      default: "empty.png",
+    },
+    //空数据提示
+    emptyTitle:{
+      type:String,
+      default: "暂无数据",
+    }
   },
   data() {
     return {
@@ -101,6 +124,7 @@ export default {
       title1:"上拉加载更多",
       draw_up:{},
       draw_down:{},
+      isEmpty:false,
 
     }
   },
@@ -145,19 +169,41 @@ export default {
         _this.draw_down.style.display = "none";
         _this.draw_up.style.display = "block";
         _this.hint="加载中"
-        _this.$emit("draw_up", (bool, vv) => {
-          _this.hint =bool? _this.title1 :vv;
+      if (this.bool) {//一次只发送一个请求
+        this.bool = false;
+        _this.$emit("draw_up", (bool, hint, isEmpty) => {
+          _this.bool =true;
+          _this.hint = bool ? _this.title1 : hint;
+          _this.isEmpty = bool ? false : isEmpty;
           _this.draw_down.style.display = "block";
           _this.draw_up.style.display = "none";
         });
-
+      }
     },
+
+    /**
+     *上拉加载
+     **/
+    drawDownLoad(){
+      let _this=this;
+      _this.draw_down.style.display = "block";
+      this.hint ='加载中';
+      if (this.bool) {//一次只发送一个请求
+        this.bool = false;
+        this.$emit("draw_down", (val, hint,isEmpty) => {
+          _this.bool = true;
+          _this.hint =val? _this.title1 :hint;
+          _this.isEmpty=val?false:isEmpty;
+        });
+      }
+    },
+
     /**
      * 是否首次加载数据
      */
     firstLoad(){
       if(this.first_load){
-        this.rebound();
+        this.reLoad();
         }
     },
 
@@ -177,17 +223,19 @@ export default {
         //滚动条到底部的条件
         if (scrollTop + windowHeight >= scrollHeight - _this.p_down) {
           //到了这个就可以进行业务逻辑加载后台数据了
-          _this.hint = '加载中';
-          if (_this.bool) {
-            _this.draw_down.style.display = "block";
-            _this.bool = false;
-            _this.$emit("draw_down", (val, vv) => {
-              _this.bool = true;
-              _this.hint =val? _this.title1 :vv;
-            });
-          } else {
-            e.preventDefault()
-          }
+          _this.drawDownLoad();
+          // _this.hint = '加载中';
+          // if (_this.bool) {
+          //   _this.draw_down.style.display = "block";
+          //   _this.bool = false;
+          //   _this.$emit("draw_down", (val, hint,isEmpty) => {
+          //     _this.bool = true;
+          //     _this.hint =val? _this.title1 :hint;
+          //     _this.isEmpty=val?false:isEmpty;
+          //   });
+          // } else {
+          //   e.preventDefault()
+          // }
         }
       }
     },
@@ -245,15 +293,17 @@ export default {
       //移动距离>0=向上回弹到0
       if (this.centerY > 0) {
         if (this.centerY > this.h_up / 2) {
-          _this.draw_up.style.display = "block";
-          if (this.bool) {//一次只发送一个请求
-            this.bool = false;
-            this.$emit("draw_up", (val, vv) => {
-              _this.bool = true;
-              _this.draw_up.style.display = "none";
-              _this.hint =val? _this.title1 :vv;
-            });
-          }
+          this.reLoad();
+          // _this.draw_up.style.display = "block";
+          // if (this.bool) {//一次只发送一个请求
+          //   this.bool = false;
+          //   this.$emit("draw_up", (val, hint,isEmpty) => {
+          //     _this.bool = true;
+          //     _this.draw_up.style.display = "none";
+          //     _this.hint =val? _this.title1 :hint;
+          //     _this.isEmpty=val?false:isEmpty;
+          //   });
+          // }
         }
         this.centerY = 0;
         // 添加过渡
@@ -276,15 +326,19 @@ export default {
           }
           //移动距离<回弹距离=重新计算回弹距离
           if (this.centerY < centerY + this.h_down) {
-            _this.draw_down.style.display = "block";
-            this.hint ='加载中';
-            if (this.bool) {//一次只发送一个请求
-              this.bool = false;
-              this.$emit("draw_down", (val, vv) => {
-                _this.bool = true;
-                _this.hint =val? _this.title1 :vv;
-              });
-            }
+            // _this.draw_down.style.display = "block";
+            // this.hint ='加载中';
+            // if (this.bool) {//一次只发送一个请求
+            //   this.bool = false;
+            //   this.$emit("draw_down", (val, hint,isEmpty) => {
+            //     _this.bool = true;
+            //     _this.hint =val? _this.title1 :hint;
+            //     _this.isEmpty=val?false:isEmpty;
+            //   });
+            // }
+
+            _this.drawDownLoad();
+
             u_clientHeight = document.querySelector('#ul').clientHeight;
             d_clientHeight = document.querySelector('#draw').clientHeight;
             centerY = d_clientHeight - u_clientHeight;
@@ -356,6 +410,17 @@ li {
   text-align: center;
 }
 
+.empty {
+  color: darkgrey;
+  font-size: 14px;
+  text-align: center;
+  padding-top: 10px;
+  padding-bottom: 5px;
+}
+.empty_img{
+  width: 220px;
+  padding-top: 30%;
+}
 .draw_down {
   display: none;
   color: darkgrey;
