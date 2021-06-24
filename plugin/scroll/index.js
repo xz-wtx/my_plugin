@@ -1,3 +1,3 @@
-import scroll from './sm_xz_scroll'
+import scroll from './sm_scroll'
 
 export default scroll;

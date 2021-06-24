@@ -2,10 +2,18 @@
 <template>
     <div style="height: 100%">
 
-        <sm_xz_scroll  @draw_up="drawUp" @draw_down="drawDown" >
+        <sm_xz_scroll
+                        ref="scroll"
+                        @draw_up="drawUp"
+                       @draw_down="drawDown"
+                       :empty_open="true"
+                        empty_title="暂无数据1">
 
               <template v-slot:first>
+              <div style="height: 100px">
                 <div>首部数据</div>
+                <div @click="type">首部数据</div>
+              </div>
               </template>
 
               <template v-slot:content >
@@ -24,7 +32,7 @@
 
 <script>
 
-    import sm_xz_scroll from "../../plugin/scroll/sm_xz_scroll";
+    import sm_xz_scroll from "../../plugin/scroll/sm_scroll";
     export default {
         name: "test",
       components:{
@@ -38,21 +46,28 @@
             }
         },
         methods:{
+          type(){
+            this.$refs.scroll.reLoad()
+          },
           //callback 1下次是否有数据，2提示，3是否空数据
             drawUp(callback){
                 let _this=this;
+              if(this.len>3){
+                this.dataList=[];
+                callback(false,"我是有底线的！",this.dataList.length<=0)
+                return
+              }
                 setTimeout(function () {
-
                     _this.dataList=[]
                     _this.count+=30;
                     for (let i =_this.count-10; i <(_this.count+30); i++) {
                         _this.dataList.push({title:i})
                     }
                     callback(true)
-                },1000);
+                 },1000);
             },
             drawDown(callback){
-                if(this.len>6){
+                if(this.len>3){
                     callback(false,"我是有底线的！",this.dataList.length<=0)
                     return
                 }

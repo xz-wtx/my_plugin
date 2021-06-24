@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import sm_xz_scroll_y from "../../plugin/scrollY/sm_xz_scroll_y";
+import sm_xz_scroll_y from "../../plugin/scrollY/sm_scroll_y";
 export default {
   name: 'App',
   components:{
